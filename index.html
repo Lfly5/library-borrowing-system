@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Borrowing System - Group 25</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        .search-bar { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f8f9fa; color: #2c3e50; }
+        .btn { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; color: white; font-weight: bold; }
+        .btn-borrow { background-color: #2ecc71; }
+        .btn-borrow:hover { background-color: #27ae60; }
+        .btn-borrow:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+        .btn-return { background-color: #e74c3c; }
+        .btn-return:hover { background-color: #c0392b; }
+        .log-section { background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #eee; height: 150px; overflow-y: auto; font-family: monospace; font-size: 14px;}
+        .log-section h3 { margin-top: 0; color: #7f8c8d; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📚 Library Borrowing System</h1>
+    <p style="text-align: center; color: #7f8c8d;">Group 25 - Software Project Management Demo</p>
+
+    <input type="text" id="searchInput" class="search-bar" placeholder="Search books by title or author..." onkeyup="filterBooks()">
+
+    <table id="bookTable">
+        <thead>
+            <tr>
+                <th>Book ID</th>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Available Stock</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="bookList">
+            </tbody>
+    </table>
+
+    <div class="log-section">
+        <h3>📝 System Activity Log</h3>
+        <div id="actionLog">System initialized. Ready for transactions.</div>
+    </div>
+</div>
+
+<script>
+    // Initial Book Inventory Database (Mock Data)
+    let books = [
+        { id: "B001", title: "Software Project Management", author: "Bob Hughes", stock: 3 },
+        { id: "B002", title: "The Mythical Man-Month", author: "Frederick P. Brooks", stock: 1 },
+        { id: "B003", title: "Clean Code", author: "Robert C. Martin", stock: 5 },
+        { id: "B004", title: "Design Patterns", author: "Erich Gamma", stock: 2 },
+        { id: "B005", title: "Agile Estimating and Planning", author: "Mike Cohn", stock: 0 }
+    ];
+
+    // Function to render the book table
+    function renderBooks() {
+        const tbody = document.getElementById('bookList');
+        tbody.innerHTML = ''; // Clear existing rows
+
+        books.forEach((book, index) => {
+            const row = document.createElement('tr');
+            
+            // Check if out of stock
+            const isOutOfStock = book.stock === 0;
+            const borrowBtnStatus = isOutOfStock ? 'disabled' : '';
+            
+            row.innerHTML = `
+                <td>${book.id}</td>
+                <td><strong>${book.title}</strong></td>
+                <td>${book.author}</td>
+                <td><span style="color: ${isOutOfStock ? 'red' : 'green'}; font-weight: bold;">${book.stock}</span></td>
+                <td>
+                    <button class="btn btn-borrow" ${borrowBtnStatus} onclick="borrowBook(${index})">Borrow</button>
+                    <button class="btn btn-return" onclick="returnBook(${index})">Return</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    // Function to handle borrowing
+    function borrowBook(index) {
+        if (books[index].stock > 0) {
+            books[index].stock -= 1;
+            logAction(`[BORROW] A user borrowed "${books[index].title}". Remaining stock: ${books[index].stock}`);
+            renderBooks(); // Real-time UI update
+        }
+    }
+
+    // Function to handle returning
+    function returnBook(index) {
+        books[index].stock += 1;
+        logAction(`[RETURN] A user returned "${books[index].title}". Updated stock: ${books[index].stock}`);
+        renderBooks(); // Real-time UI update
+    }
+
+    // Function to filter/search books
+    function filterBooks() {
+        const input = document.getElementById('searchInput').value.toLowerCase();
+        const rows = document.getElementById('bookList').getElementsByTagName('tr');
+
+        for (let i = 0; i < rows.length; i++) {
+            const title = rows[i].getElementsByTagName('td')[1].textContent.toLowerCase();
+            const author = rows[i].getElementsByTagName('td')[2].textContent.toLowerCase();
+            
+            if (title.includes(input) || author.includes(input)) {
+                rows[i].style.display = "";
+            } else {
+                rows[i].style.display = "none";
+            }
+        }
+    }
+
+    // Function to log actions (Simulating automated record-keeping)
+    function logAction(message) {
+        const logDiv = document.getElementById('actionLog');
+        const timeStamp = new Date().toLocaleTimeString();
+        logDiv.innerHTML = `<div><span style="color: #3498db;">[${timeStamp}]</span> ${message}</div>` + logDiv.innerHTML;
+    }
+
+    // Initialize the app on page load
+    window.onload = renderBooks;
+</script>
+
+</body>
+</html>
